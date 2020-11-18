@@ -19,6 +19,7 @@ export interface GalleryProps extends
   onChange?(current: GalleryState['current']): void;
   onEnd?({ targetIndex }: { targetIndex: GalleryState['current'] }): void;
   bullets?: 'dark' | 'light' | false;
+  draggable?: boolean;
 }
 
 export interface GalleryState {
@@ -79,6 +80,7 @@ class Gallery extends Component<GalleryProps, GalleryState> {
   isChildrenDirty: boolean;
 
   static defaultProps: GalleryProps = {
+    draggable: true,
     slideWidth: '100%',
     children: '',
     timeout: 0,
@@ -393,6 +395,7 @@ class Gallery extends Component<GalleryProps, GalleryState> {
       bullets,
       className,
       platform,
+      draggable,
       ...restProps
     } = this.props;
 
@@ -404,6 +407,11 @@ class Gallery extends Component<GalleryProps, GalleryState> {
       WebkitTransition: animation ? `-webkit-transform ${duration}s cubic-bezier(.1, 0, .25, 1)` : 'none',
       transition: animation ? `transform ${duration}s cubic-bezier(.1, 0, .25, 1)` : 'none',
     };
+    const touchHandlers = draggable ? {
+      onStartX: this.onStart,
+      onMoveX: this.onMoveX,
+      onEnd: this.onEnd,
+    } : {};
 
     return (
       <div className={classNames(getClassName('Gallery', platform), className, `Gallery--${align}`, {
@@ -412,9 +420,7 @@ class Gallery extends Component<GalleryProps, GalleryState> {
       })} {...restProps} ref={this.container}>
         <Touch
           className="Gallery__viewport"
-          onStartX={this.onStart}
-          onMoveX={this.onMoveX}
-          onEnd={this.onEnd}
+          {...touchHandlers}
           style={{ width: slideWidth === 'custom' ? '100%' : slideWidth }}
           getRootRef={this.getViewportRef}
         >
